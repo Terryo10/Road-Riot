@@ -1,11 +1,13 @@
+// File: lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'game/game_screen.dart';
-import 'blocs/game_bloc.dart';
-import 'blocs/player_bloc.dart';
-import 'blocs/shop_bloc.dart';
-import 'screens/main_menu.dart';
+import 'blocs/game_bloc/game_bloc.dart';
+import 'blocs/player_bloc/player_bloc.dart';
+import 'blocs/shop_bloc/shop_bloc.dart';
+import 'game/screens/main_menu.dart';
+import 'game/screens/shop_screen.dart';
 import 'repositories/game_repository.dart';
 import 'services/game_service.dart';
 
@@ -53,6 +55,10 @@ class RoadRiotApp extends StatelessWidget {
           ),
           home: const MainMenu(),
           debugShowCheckedModeBanner: false,
+          routes: {
+            '/game': (context) => const GameScreen(),
+            '/shop': (context) => const ShopScreen(),
+          },
         ),
       ),
     );
