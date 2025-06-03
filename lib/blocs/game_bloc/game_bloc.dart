@@ -10,7 +10,7 @@ part 'game_state.dart';
 class GameBloc extends Bloc<GameEvent, GameState> {
   final GameService gameService;
   
-  GameBloc({required this.gameService}) : super(const GameInitial()) {
+  GameBloc({required this.gameService}) : super(GameInitial()) {
     on<StartGameEvent>(_onStartGame);
     on<PauseGameEvent>(_onPauseGame);
     on<ResumeGameEvent>(_onResumeGame);
@@ -35,7 +35,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onPauseGame(PauseGameEvent event, Emitter<GameState> emit) {
     gameService.pauseGame();
-    emit(const GamePaused());
+    emit( GamePaused());
   }
 
   void _onResumeGame(ResumeGameEvent event, Emitter<GameState> emit) {

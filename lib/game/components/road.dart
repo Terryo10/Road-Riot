@@ -8,18 +8,23 @@ class Road extends Component {
 
   @override
   Future<void> onLoad() async {
-    // Create road background
-    add(RectangleComponent(
-      size: game.size,
-      paint: Paint()..color = Colors.grey[800]!,
-    ));
-
-    // Create lane markers
-    final laneWidth = game.size.x / GameConstants.laneCount;
-    
+    final parentSize =
+        (parent is HasGameRef
+            ? (parent as HasGameRef).gameRef.size
+            : Vector2(0, 0));
+    add(
+      RectangleComponent(
+        size: parentSize,
+        paint: Paint()..color = Colors.grey[800]!,
+      ),
+    );
+    final laneWidth = parentSize.x / GameConstants.laneCount;
     for (int i = 1; i < GameConstants.laneCount; i++) {
-      for (double y = 0; y < game.size.y + GameConstants.laneMarkerSpacing; 
-           y += GameConstants.laneMarkerSpacing) {
+      for (
+        double y = 0;
+        y < parentSize.y + GameConstants.laneMarkerSpacing;
+        y += GameConstants.laneMarkerSpacing
+      ) {
         final marker = RectangleComponent(
           position: Vector2(i * laneWidth - 2, y),
           size: Vector2(4, GameConstants.laneMarkerHeight),
@@ -34,16 +39,14 @@ class Road extends Component {
   @override
   void update(double dt) {
     super.update(dt);
-    
-    // Scroll road
+    final parentSize =
+        (parent is HasGameRef
+            ? (parent as HasGameRef).gameRef.size
+            : Vector2(0, 0));
     scrollOffset += dt * GameConstants.roadScrollSpeed;
-    
-    // Update lane marker positions
     for (final marker in laneMarkers) {
       marker.position.y += dt * GameConstants.roadScrollSpeed;
-      
-      // Reset position when marker goes off screen
-      if (marker.position.y > game.size.y + 50) {
+      if (marker.position.y > parentSize.y + 50) {
         marker.position.y = -50;
       }
     }

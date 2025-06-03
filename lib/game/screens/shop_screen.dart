@@ -1,11 +1,9 @@
-
 // File: lib/screens/shop_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/shop_bloc/shop_bloc.dart';
 import '../../models/shop_models.dart';
-
 
 class ShopScreen extends StatelessWidget {
   const ShopScreen({super.key});
@@ -36,7 +34,9 @@ class ShopScreen extends StatelessWidget {
             if (state is ShopPurchaseSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Successfully purchased ${state.purchasedItem.name}!'),
+                  content: Text(
+                    'Successfully purchased ${state.purchasedItem.name}!',
+                  ),
                   backgroundColor: Colors.green,
                 ),
               );
@@ -52,9 +52,11 @@ class ShopScreen extends StatelessWidget {
           builder: (context, state) {
             if (state is ShopInitial) {
               context.read<ShopBloc>().add(LoadShopEvent());
-              return const Center(child: CircularProgressIndicator(color: Colors.white));
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
             }
-            
+
             if (state is ShopLoaded) {
               return Column(
                 children: [
@@ -64,7 +66,11 @@ class ShopScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.monetization_on, color: Colors.amber, size: 32),
+                        const Icon(
+                          Icons.monetization_on,
+                          color: Colors.amber,
+                          size: 32,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           '${state.playerCoins}',
@@ -93,7 +99,7 @@ class ShopScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
+
                   // Shop items
                   Expanded(
                     child: ListView.builder(
@@ -108,7 +114,7 @@ class ShopScreen extends StatelessWidget {
                 ],
               );
             }
-            
+
             return const Center(
               child: Text(
                 'Error loading shop',
@@ -124,12 +130,12 @@ class ShopScreen extends StatelessWidget {
   Widget _buildShopItem(BuildContext context, ShopItem item, int playerCoins) {
     final canAfford = playerCoins >= item.price;
     final isOwned = item.isOwned;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withAlpha((0.95 * 255).toInt()),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -150,7 +156,9 @@ class ShopScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: _getItemTypeColor(item.type).withOpacity(0.3),
+                  color: _getItemTypeColor(
+                    item.type,
+                  ).withAlpha((0.3 * 255).toInt()),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -162,9 +170,9 @@ class ShopScreen extends StatelessWidget {
               size: 40,
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Item details
           Expanded(
             child: Column(
@@ -189,9 +197,14 @@ class ShopScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: _getItemTypeColor(item.type).withOpacity(0.1),
+                    color: _getItemTypeColor(
+                      item.type,
+                    ).withAlpha((0.1 * 255).toInt()),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -206,9 +219,9 @@ class ShopScreen extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Price and buy button
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -217,7 +230,11 @@ class ShopScreen extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.monetization_on, color: Colors.amber, size: 18),
+                    const Icon(
+                      Icons.monetization_on,
+                      color: Colors.amber,
+                      size: 18,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${item.price}',
@@ -233,9 +250,12 @@ class ShopScreen extends StatelessWidget {
                 SizedBox(
                   width: 80,
                   child: ElevatedButton(
-                    onPressed: canAfford 
-                      ? () => context.read<ShopBloc>().add(PurchaseItemEvent(item))
-                      : null,
+                    onPressed:
+                        canAfford
+                            ? () => context.read<ShopBloc>().add(
+                              PurchaseItemEvent(item),
+                            )
+                            : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: canAfford ? Colors.green : Colors.grey,
                       foregroundColor: Colors.white,
@@ -252,7 +272,10 @@ class ShopScreen extends StatelessWidget {
                 ),
               ] else ...[
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green,
                     borderRadius: BorderRadius.circular(20),

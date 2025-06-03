@@ -10,7 +10,7 @@ part 'shop_state.dart';
 class ShopBloc extends Bloc<ShopEvent, ShopState> {
   final GameRepository gameRepository;
   
-  ShopBloc({required this.gameRepository}) : super(const ShopInitial()) {
+  ShopBloc({required this.gameRepository}) : super( ShopInitial()) {
     on<LoadShopEvent>(_onLoadShop);
     on<PurchaseItemEvent>(_onPurchaseItem);
   }
