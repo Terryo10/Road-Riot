@@ -1,42 +1,52 @@
+// File: lib/game/components/obstacle.dart
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import '../../models/game_models.dart';
 import '../../utils/constants.dart';
 
-class ObstacleComponent extends RectangleComponent {
+class ObstacleComponent extends RectangleComponent with HasGameRef {
   final Obstacle obstacleData;
 
   ObstacleComponent({required this.obstacleData})
-    : super(size: Vector2(50, 50), paint: Paint()..color = Colors.brown);
+      : super(size: Vector2(50, 50));
 
   @override
   Future<void> onLoad() async {
-    final parentSize =
-        (parent is HasGameRef
-            ? (parent as HasGameRef).gameRef.size
-            : Vector2(0, 0));
-    final laneWidth = parentSize.x / GameConstants.laneCount;
+    await super.onLoad();
+    
+    // Position the obstacle in the correct lane
+    final laneWidth = gameRef.size.x / GameConstants.laneCount;
     position = Vector2(
       obstacleData.lane * laneWidth + (laneWidth / 2) - size.x / 2,
       obstacleData.y,
     );
 
-    // Customize appearance based on type
+    // Set base color and add visual details
     paint = Paint()..color = _getColorForType(obstacleData.type);
+    _addObstacleDetails();
+  }
 
-    // Add visual details based on obstacle type
+  void _addObstacleDetails() {
     switch (obstacleData.type) {
       case ObstacleType.rock:
-        // Add circular shape for rock
+        // Make rock circular and add texture
         add(
           CircleComponent(
             radius: size.x / 2,
             paint: Paint()..color = Colors.grey[600]!,
           ),
         );
+        add(
+          CircleComponent(
+            radius: size.x / 3,
+            position: Vector2(size.x * 0.1, size.y * 0.1),
+            paint: Paint()..color = Colors.grey[500]!,
+          ),
+        );
         break;
+        
       case ObstacleType.tree:
-        // Add tree-like appearance
+        // Tree trunk
         add(
           RectangleComponent(
             position: Vector2(size.x * 0.4, size.y * 0.6),
@@ -44,18 +54,41 @@ class ObstacleComponent extends RectangleComponent {
             paint: Paint()..color = Colors.brown[800]!,
           ),
         );
+        // Tree foliage
         add(
           CircleComponent(
-            radius: size.x * 0.3,
-            position: Vector2(size.x * 0.5, size.y * 0.3),
+            radius: size.x * 0.35,
+            position: Vector2(size.x * 0.5, size.y * 0.35),
             paint: Paint()..color = Colors.green[700]!,
           ),
         );
-        break;
-      case ObstacleType.pit:
-        // Add pit appearance
+        // Additional foliage for fuller look
         add(
-          RectangleComponent(size: size, paint: Paint()..color = Colors.black),
+          CircleComponent(
+            radius: size.x * 0.25,
+            position: Vector2(size.x * 0.3, size.y * 0.25),
+            paint: Paint()..color = Colors.green[600]!,
+          ),
+        );
+        break;
+        
+      case ObstacleType.pit:
+        // Main pit (black)
+        paint = Paint()..color = Colors.black;
+        // Add danger markings
+        add(
+          RectangleComponent(
+            position: Vector2(size.x * 0.1, size.y * 0.1),
+            size: Vector2(size.x * 0.8, size.y * 0.1),
+            paint: Paint()..color = Colors.yellow,
+          ),
+        );
+        add(
+          RectangleComponent(
+            position: Vector2(size.x * 0.1, size.y * 0.8),
+            size: Vector2(size.x * 0.8, size.y * 0.1),
+            paint: Paint()..color = Colors.yellow,
+          ),
         );
         break;
     }
@@ -68,12 +101,8 @@ class ObstacleComponent extends RectangleComponent {
     // Move down the screen
     position.y += dt * GameConstants.enemySpeed;
 
-    final parentSize =
-        (parent is HasGameRef
-            ? (parent as HasGameRef).gameRef.size
-            : Vector2(0, 0));
     // Remove when off screen
-    if (position.y > parentSize.y + 100) {
+    if (position.y > gameRef.size.y + 100) {
       removeFromParent();
     }
   }
@@ -81,9 +110,9 @@ class ObstacleComponent extends RectangleComponent {
   Color _getColorForType(ObstacleType type) {
     switch (type) {
       case ObstacleType.rock:
-        return Colors.grey;
+        return Colors.grey[700]!;
       case ObstacleType.tree:
-        return Colors.green;
+        return Colors.green[800]!;
       case ObstacleType.pit:
         return Colors.black;
     }

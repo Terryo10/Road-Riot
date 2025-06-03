@@ -1,4 +1,3 @@
-
 // File: lib/services/game_service.dart
 import 'dart:math';
 import '../repositories/game_repository.dart';
@@ -13,10 +12,10 @@ class GameService {
   int _coins = 0;
   double _gameSpeed = 1.0;
   
-  List<Enemy> _enemies = [];
-  List<Obstacle> _obstacles = [];
-  List<CoinPickup> _coinPickups = [];
-  List<Bullet> _bullets = [];
+  final List<Enemy> _enemies = [];
+  final List<Obstacle> _obstacles = [];
+  final List<CoinPickup> _coinPickups = [];
+  final List<Bullet> _bullets = [];
 
   GameService({required this.repository});
 
@@ -49,20 +48,21 @@ class GameService {
     if (!_isGameRunning) return _getCurrentGameData();
 
     // Update score and speed
-    _score += (_gameSpeed * 10).round();
-    _gameSpeed += deltaTime * 0.1;
+    _score += (_gameSpeed * 5).round();
+    _gameSpeed += deltaTime * 0.05;
 
-    // Update game objects
+    // Update all game objects
     _updateEnemies(deltaTime);
     _updateObstacles(deltaTime);
     _updateBullets(deltaTime);
     _updateCoinPickups(deltaTime);
+    _checkCollisions();
 
     return _getCurrentGameData();
   }
 
   void spawnEnemy() {
-    if (_enemies.length < 3) {
+    if (_enemies.length < 4) { // Allow more enemies on screen
       final enemyType = EnemyType.values[random.nextInt(EnemyType.values.length)];
       _enemies.add(Enemy(
         lane: random.nextInt(6).toDouble(),
@@ -74,7 +74,7 @@ class GameService {
   }
 
   void spawnObstacle() {
-    if (_obstacles.length < 2) {
+    if (_obstacles.length < 3) { // Allow more obstacles
       _obstacles.add(Obstacle(
         lane: random.nextInt(6).toDouble(),
         y: -100,
@@ -87,18 +87,12 @@ class GameService {
     _bullets.add(Bullet(x: x, y: y));
   }
 
-  bool checkCollisions(double playerLane, double playerY) {
-    // Implementation for collision detection
-    // Returns true if player should take damage
-    return false;
-  }
-
   void _updateEnemies(double deltaTime) {
     for (int i = _enemies.length - 1; i >= 0; i--) {
       final enemy = _enemies[i];
-      final newY = enemy.y + (_gameSpeed * 150 * deltaTime);
+      final newY = enemy.y + (_gameSpeed * 120 * deltaTime);
       
-      if (newY > 800) {
+      if (newY > 900) { // Screen height + buffer
         _enemies.removeAt(i);
       } else {
         _enemies[i] = enemy.copyWith(y: newY);
@@ -109,9 +103,9 @@ class GameService {
   void _updateObstacles(double deltaTime) {
     for (int i = _obstacles.length - 1; i >= 0; i--) {
       final obstacle = _obstacles[i];
-      final newY = obstacle.y + (_gameSpeed * 150 * deltaTime);
+      final newY = obstacle.y + (_gameSpeed * 120 * deltaTime);
       
-      if (newY > 800) {
+      if (newY > 900) {
         _obstacles.removeAt(i);
       } else {
         _obstacles[i] = obstacle.copyWith(y: newY);
@@ -122,9 +116,9 @@ class GameService {
   void _updateBullets(double deltaTime) {
     for (int i = _bullets.length - 1; i >= 0; i--) {
       final bullet = _bullets[i];
-      final newY = bullet.y - (300 * deltaTime);
+      final newY = bullet.y - (400 * deltaTime); // Bullets move up faster
       
-      if (newY < -10) {
+      if (newY < -20) {
         _bullets.removeAt(i);
       } else {
         _bullets[i] = bullet.copyWith(y: newY);
@@ -135,14 +129,50 @@ class GameService {
   void _updateCoinPickups(double deltaTime) {
     for (int i = _coinPickups.length - 1; i >= 0; i--) {
       final coin = _coinPickups[i];
-      final newY = coin.y + (_gameSpeed * 150 * deltaTime);
+      final newY = coin.y + (_gameSpeed * 120 * deltaTime);
       
-      if (newY > 800) {
+      if (newY > 900) {
         _coinPickups.removeAt(i);
       } else {
         _coinPickups[i] = coin.copyWith(y: newY);
       }
     }
+  }
+
+  void _checkCollisions() {
+    // Check bullet-enemy collisions
+    for (int i = _bullets.length - 1; i >= 0; i--) {
+      final bullet = _bullets[i];
+      
+      for (int j = _enemies.length - 1; j >= 0; j--) {
+        final enemy = _enemies[j];
+        
+        // Simple collision detection
+        final laneWidth = 400 / 6; // Approximate screen width / lanes
+        final enemyX = enemy.lane * laneWidth + (laneWidth / 2);
+        
+        if ((bullet.x - enemyX).abs() < 30 && (bullet.y - enemy.y).abs() < 40) {
+          // Hit detected
+          final newHealth = enemy.health - 25;
+          
+          if (newHealth <= 0) {
+            // Enemy destroyed
+            _score += 100;
+            _spawnCoin(enemyX, enemy.y);
+            _enemies.removeAt(j);
+          } else {
+            _enemies[j] = enemy.copyWith(health: newHealth);
+          }
+          
+          _bullets.removeAt(i);
+          break;
+        }
+      }
+    }
+  }
+
+  void _spawnCoin(double x, double y) {
+    _coinPickups.add(CoinPickup(x: x, y: y));
   }
 
   double _getHealthForEnemyType(EnemyType type) {
