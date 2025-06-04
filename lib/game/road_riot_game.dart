@@ -26,6 +26,7 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
   late async.Timer enemySpawnTimer;
   late async.Timer obstacleSpawnTimer;
   late async.Timer gameUpdateTimer;
+  late async.Timer autoShootTimer;
 
   final List<EnemyCar> enemyCars = [];
   final List<ObstacleComponent> obstacles = [];
@@ -37,6 +38,8 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
 
   final Random random = Random();
   bool _isInitialized = false;
+  bool _isBeingDragged = false;
+  bool _autoShootingEnabled = false;
 
   RoadRiotGame({required this.gameBloc, required this.playerBloc});
 
@@ -94,6 +97,16 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
         }
       },
     );
+
+    // Auto-shoot timer - shoots every 300ms when enabled
+    autoShootTimer = async.Timer.periodic(
+      const Duration(milliseconds: 300),
+      (_) {
+        if (_isInitialized && _autoShootingEnabled) {
+          _shootBullet();
+        }
+      },
+    );
   }
 
   void _listenToGameState() {
@@ -110,6 +123,8 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
     playerStateSubscription = playerBloc.stream.listen((state) {
       if (state is PlayerActive) {
         playerCar.updateLane(state.lane);
+        // Update player position in game service for collision detection
+        gameBloc.add(UpdatePlayerPositionEvent(state.lane));
       }
     });
   }
@@ -231,6 +246,19 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
   }
 
   @override
+  void onPanStart(DragStartInfo info) {
+    _isBeingDragged = true;
+    _autoShootingEnabled = true; // Start auto-shooting when drag starts
+    
+    // Move player immediately to tap position
+    final laneWidth = size.x / GameConstants.laneCount;
+    final targetLane = (info.eventPosition.global.x / laneWidth).floor().toDouble();
+    playerBloc.add(
+      MovePlayerEvent(targetLane.clamp(0, GameConstants.laneCount - 1)),
+    );
+  }
+
+  @override
   void onPanUpdate(DragUpdateInfo info) {
     // Calculate target lane based on drag position
     final laneWidth = size.x / GameConstants.laneCount;
@@ -243,7 +271,18 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
   }
 
   @override
+  void onPanEnd(DragEndInfo info) {
+    _isBeingDragged = false;
+    _autoShootingEnabled = false; // Stop auto-shooting when drag ends
+  }
+
+  @override
   void onTap() {
+    // Single tap also shoots
+    _shootBullet();
+  }
+
+  void _shootBullet() {
     // Get current player position for bullet spawn
     final playerState = playerBloc.state;
     if (playerState is PlayerActive) {
@@ -260,6 +299,7 @@ class RoadRiotGame extends FlameGame with PanDetector, TapDetector, HasGameRef {
     gameUpdateTimer.cancel();
     enemySpawnTimer.cancel();
     obstacleSpawnTimer.cancel();
+    autoShootTimer.cancel();
   }
 
   @override

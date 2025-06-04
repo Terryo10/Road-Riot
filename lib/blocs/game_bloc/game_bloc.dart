@@ -19,6 +19,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     on<SpawnEnemyEvent>(_onSpawnEnemy);
     on<SpawnObstacleEvent>(_onSpawnObstacle);
     on<AddBulletEvent>(_onAddBullet);
+    on<UpdatePlayerPositionEvent>(_onUpdatePlayerPosition);
   }
 
   void _onStartGame(StartGameEvent event, Emitter<GameState> emit) {
@@ -27,6 +28,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       score: 0,
       coins: 0,
       gameSpeed: 1.0,
+      playerHealth: 100.0,
       enemies: [],
       obstacles: [],
       coinPickups: [],
@@ -47,6 +49,7 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       score: updatedData['score'],
       coins: updatedData['coins'],
       gameSpeed: updatedData['gameSpeed'],
+      playerHealth: updatedData['playerHealth'],
       enemies: updatedData['enemies'],
       obstacles: updatedData['obstacles'],
       coinPickups: updatedData['coinPickups'],
@@ -69,10 +72,18 @@ class GameBloc extends Bloc<GameEvent, GameState> {
     final currentState = state;
     if (currentState is GameRunning) {
       final updatedData = gameService.updateGame(event.deltaTime);
+      
+      // Check if player died
+      if (updatedData['playerHealth'] <= 0) {
+        add(GameOverEvent());
+        return;
+      }
+      
       emit(GameRunning(
         score: updatedData['score'],
         coins: updatedData['coins'],
         gameSpeed: updatedData['gameSpeed'],
+        playerHealth: updatedData['playerHealth'],
         enemies: updatedData['enemies'],
         obstacles: updatedData['obstacles'],
         coinPickups: updatedData['coinPickups'],
@@ -91,5 +102,9 @@ class GameBloc extends Bloc<GameEvent, GameState> {
 
   void _onAddBullet(AddBulletEvent event, Emitter<GameState> emit) {
     gameService.addBullet(event.x, event.y);
+  }
+
+  void _onUpdatePlayerPosition(UpdatePlayerPositionEvent event, Emitter<GameState> emit) {
+    gameService.updatePlayerPosition(event.lane);
   }
 }

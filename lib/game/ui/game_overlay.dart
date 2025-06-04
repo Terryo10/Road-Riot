@@ -75,14 +75,15 @@ class GameOverlay extends StatelessWidget {
                     return const SizedBox.shrink();
                   },
                 ),
-                BlocBuilder<PlayerBloc, PlayerState>(
+                BlocBuilder<GameBloc, GameState>(
                   builder: (context, state) {
-                    if (state is PlayerActive) {
+                    if (state is GameRunning) {
+                      final healthPercent = (state.playerHealth / 100.0).clamp(0.0, 1.0);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Text(
-                            'Health: ${state.health.round()}%',
+                            'Health: ${state.playerHealth.round()}%',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -106,13 +107,13 @@ class GameOverlay extends StatelessWidget {
                               border: Border.all(color: Colors.white, width: 1),
                             ),
                             child: FractionallySizedBox(
-                              widthFactor: (state.health / state.maxHealth).clamp(0.0, 1.0),
+                              widthFactor: healthPercent,
                               alignment: Alignment.centerLeft,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: state.health > 50 
+                                  color: state.playerHealth > 50 
                                     ? Colors.green 
-                                    : state.health > 25 
+                                    : state.playerHealth > 25 
                                       ? Colors.orange 
                                       : Colors.red,
                                   borderRadius: BorderRadius.circular(6),
@@ -152,7 +153,7 @@ class GameOverlay extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Text(
-                'Drag to move • Tap to shoot',
+                'Drag to move & auto-shoot • Tap to shoot once',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,

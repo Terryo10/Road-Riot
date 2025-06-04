@@ -13,6 +13,7 @@ final class GameRunning extends GameState {
   final int score;
   final int coins;
   final double gameSpeed;
+  final double playerHealth;
   final List<Enemy> enemies;
   final List<Obstacle> obstacles;
   final List<CoinPickup> coinPickups;
@@ -22,6 +23,7 @@ final class GameRunning extends GameState {
     required this.score,
     required this.coins,
     required this.gameSpeed,
+    required this.playerHealth,
     required this.enemies,
     required this.obstacles,
     required this.coinPickups,
@@ -30,7 +32,7 @@ final class GameRunning extends GameState {
 
   @override
   List<Object> get props => [
-    score, coins, gameSpeed, enemies, obstacles, coinPickups, bullets
+    score, coins, gameSpeed, playerHealth, enemies, obstacles, coinPickups, bullets
   ];
 }
 

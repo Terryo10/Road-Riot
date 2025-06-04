@@ -30,3 +30,10 @@ class AddBulletEvent extends GameEvent {
   @override
   List<Object> get props => [x, y];
 }
+
+class UpdatePlayerPositionEvent extends GameEvent {
+  final double lane;
+  const UpdatePlayerPositionEvent(this.lane);
+  @override
+  List<Object> get props => [lane];
+}
